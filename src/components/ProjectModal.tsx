@@ -17,21 +17,45 @@ export default function ProjectModal({ isOpen, onClose, project }: ProjectModalP
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (project && project.contentType === 'markdown') {
-      setIsLoading(true);
+    if (!project || !isOpen) {
+      setReadmeContent('');
       setError('');
-      fetch(project.contentUrl)
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error('README not found');
-          }
-          return res.text();
-        })
-        .then((text) => setReadmeContent(text))
-        .catch(() => setError('Could not fetch the project documentation.'))
-        .finally(() => setIsLoading(false));
+      setIsLoading(false);
+      return;
     }
-  }, [project]);
+
+    if (project.contentType !== 'markdown') {
+      setReadmeContent('');
+      setError('');
+      setIsLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setIsLoading(true);
+    setReadmeContent('');
+    setError('');
+
+    fetch(project.contentUrl, { signal: controller.signal })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('README not found');
+        }
+        return res.text();
+      })
+      .then((text) => setReadmeContent(text))
+      .catch((fetchError: Error) => {
+        if (fetchError.name !== 'AbortError') {
+          setError('Could not fetch the project documentation.');
+        }
+      })
+      .finally(() => setIsLoading(false));
+
+    return () => {
+      controller.abort();
+    };
+  }, [isOpen, project]);
 
   const renderContent = () => {
     if (!project) return null;
@@ -88,7 +112,9 @@ export default function ProjectModal({ isOpen, onClose, project }: ProjectModalP
                     <Dialog.Title as="h3" className="mt-2 text-2xl font-semibold text-white">
                       {project?.title}
                     </Dialog.Title>
-                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">{project?.description}</p>
+                    <Dialog.Description className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                      {project?.description}
+                    </Dialog.Description>
                   </div>
                   <div className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs font-medium text-cyan-200">
                     {project?.contentType === 'markdown' ? 'README' : 'PDF report'}

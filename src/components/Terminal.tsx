@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ProjectModal from '@/components/ProjectModal';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { projects } from '@/data';
@@ -43,6 +43,12 @@ interface HelpProps {
 
 interface ProjectsProps {
   onCommandClick: (command: string) => void;
+}
+
+interface HistoryEntry {
+  id: string;
+  command: string;
+  output: React.ReactNode;
 }
 
 const welcomeText = 'Interactive portfolio console ready. Explore projects, technical skills, and contact details using the commands below.';
@@ -189,18 +195,29 @@ const Skills = () => {
 
 const initialPrompt = 'visitor@portfolio:~$';
 
+const createHistoryEntry = (command: string, output: React.ReactNode) => ({
+  id: `${command || 'output'}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  command,
+  output,
+});
+
+const getInitialHistory = (runCommand: (command: string) => void) => ([
+  createHistoryEntry('', <WelcomeMessage />),
+  createHistoryEntry('', <Help onCommandClick={runCommand} />),
+]);
+
 export default function Terminal() {
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState<{ command: string; output: React.ReactNode }[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
-  const runCommand = (commandStr: string) => {
+  const runCommand = useCallback((commandStr: string) => {
     const command = commandStr.trim().toLowerCase();
     let output: React.ReactNode;
-    const commandHistoryEntry = { command: `${initialPrompt} ${commandStr}`, output: null };
+    const commandHistoryEntry = createHistoryEntry(`${initialPrompt} ${commandStr}`, null);
 
     setHistory((prev) => [...prev, commandHistoryEntry]);
 
@@ -221,10 +238,7 @@ export default function Terminal() {
     } else {
       switch (command) {
         case 'clear':
-          setHistory([
-            { command: '', output: <WelcomeMessage /> },
-            { command: '', output: <Help onCommandClick={runCommand} /> },
-          ]);
+          setHistory(getInitialHistory(runCommand));
           return;
         case 'help':
           output = <Help onCommandClick={runCommand} />;
@@ -247,16 +261,12 @@ export default function Terminal() {
       }
     }
 
-    setHistory((prev) => [...prev, { command: '', output }]);
-  };
+    setHistory((prev) => [...prev, createHistoryEntry('', output)]);
+  }, []);
 
   useEffect(() => {
-    setHistory([
-      { command: '', output: <WelcomeMessage /> },
-      { command: '', output: <Help onCommandClick={runCommand} /> },
-    ]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setHistory(getInitialHistory(runCommand));
+  }, [runCommand]);
 
   useEffect(() => {
     if (terminalRef.current) {
@@ -285,8 +295,8 @@ export default function Terminal() {
         </div>
 
         <div ref={terminalRef} className="max-h-[680px] min-h-[540px] overflow-y-auto p-5 text-sm text-slate-100 sm:p-6">
-          {history.map((entry, index) => (
-            <div key={index} className="mb-4">
+          {history.map((entry) => (
+            <div key={entry.id} className="mb-4">
               {entry.command ? <div className="font-mono text-cyan-300">{entry.command}</div> : null}
               {entry.output ? <div className="mt-3">{entry.output}</div> : null}
             </div>
