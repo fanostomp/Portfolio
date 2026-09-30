@@ -10,6 +10,14 @@ export type PortfolioProject = {
   visualDetail: string;
 };
 
+export type SupportingProject = {
+  title: string;
+  category: string;
+  summary: string;
+  stack: string[];
+  href: string;
+};
+
 export const featuredProjects: PortfolioProject[] = [
   {
     number: '01',
@@ -56,5 +64,68 @@ export const featuredProjects: PortfolioProject[] = [
     linkLabel: 'View repository',
     visual: 'ML / DATA',
     visualDetail: 'classify / evaluate / iterate',
+  },
+];
+
+export const moreProjects: SupportingProject[] = [
+  {
+    title: 'Operating Systems',
+    category: 'Systems / source analysis',
+    summary:
+      'Source-level systems work around Kiwi and the Linux Kernel Library (LKL), including implementation work and technical reports.',
+    stack: ['C', 'Linux', 'Kernel internals'],
+    href: 'https://github.com/fanostomp/Operating-Systems-MYY601',
+  },
+  {
+    title: 'Spatial Data R-tree',
+    category: 'Data structures / spatial queries',
+    summary:
+      'R-tree implementation with STR bulk loading and support for window range, distance range and k-nearest-neighbour queries.',
+    stack: ['Python', 'R-tree', 'STR', 'k-NN'],
+    href: 'https://github.com/fanostomp/Spatial-data-r-tree',
+  },
+  {
+    title: 'Complex Data Management',
+    category: 'Database algorithms',
+    summary:
+      'Database optimization algorithms covering selectivity histograms, semi/anti joins, hash and sort-merge joins, pipelining and three-way joins.',
+    stack: ['Python', 'Joins', 'Histograms', 'Query processing'],
+    href: 'https://github.com/fanostomp/complex-data-management-algorithms',
+  },
+];
+
+export const experience = {
+  role: 'Full-stack development',
+  context: 'Production software · Remote',
+  summary:
+    'Worked on a production React and .NET platform, supporting feature development and investigating issues across the frontend, backend and data layers.',
+  highlights: [
+    'Built and supported product features with React and TypeScript.',
+    'Integrated and debugged ASP.NET Core APIs and real-time application flows.',
+    'Used SQL and Azure Data Studio to investigate production data issues.',
+    'Traced problems across UI, API and database layers instead of treating each layer in isolation.',
+  ],
+};
+
+export const techGroups = [
+  {
+    title: 'Frontend',
+    items: ['React 19', 'TypeScript', 'Tailwind CSS', 'Material UI', 'Accessible UI'],
+  },
+  {
+    title: 'Backend',
+    items: ['ASP.NET Core', '.NET', 'REST APIs', 'SignalR'],
+  },
+  {
+    title: 'Data',
+    items: ['SQL', 'Azure Data Studio', 'Relational databases'],
+  },
+  {
+    title: 'Tooling',
+    items: ['Git', 'Docker', 'Linux', 'GitHub Actions'],
+  },
+  {
+    title: 'Testing',
+    items: ['xUnit', 'Vitest', 'React Testing Library', 'Playwright'],
   },
 ];

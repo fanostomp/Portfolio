@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Terminal from '@/components/Terminal';
-import { featuredProjects } from '@/data/portfolio';
+import { experience, featuredProjects, moreProjects, techGroups } from '@/data/portfolio';
 
 const externalLinks = [
   ['GitHub', 'https://github.com/fanostomp'],
@@ -14,10 +14,42 @@ export default function PortfolioHome() {
 
   useEffect(() => {
     document.body.style.overflow = terminalOpen ? 'hidden' : '';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setTerminalOpen(false);
+    };
+
+    if (terminalOpen) window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [terminalOpen]);
+
+  useEffect(() => {
+    const items = Array.from(document.querySelectorAll<HTMLElement>('[data-scroll-reveal]'));
+
+    if (!('IntersectionObserver' in window)) {
+      items.forEach((item) => item.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' },
+    );
+
+    items.forEach((item) => observer.observe(item));
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="portfolio-shell">
@@ -27,6 +59,7 @@ export default function PortfolioHome() {
         </a>
         <nav aria-label="Primary navigation">
           <a href="#work">Work</a>
+          <a href="#experience">Experience</a>
           <a href="#about">About</a>
           <a href="#contact">Contact</a>
           <button className="terminal-trigger" onClick={() => setTerminalOpen(true)} aria-label="Open terminal mode">
@@ -70,62 +103,180 @@ export default function PortfolioHome() {
 
         <div className="marquee" aria-hidden="true">
           <div className="marquee-track">
-            <span>REACT — TYPESCRIPT — .NET — SQL — SIGNALR — DOCKER — LINUX — </span>
-            <span>REACT — TYPESCRIPT — .NET — SQL — SIGNALR — DOCKER — LINUX — </span>
+            <span>REACT — TYPESCRIPT — .NET — SQL — SIGNALR — DOCKER — LINUX — TESTING — </span>
+            <span>REACT — TYPESCRIPT — .NET — SQL — SIGNALR — DOCKER — LINUX — TESTING — </span>
           </div>
         </div>
 
         <section className="work section-wrap" id="work">
-          <div className="section-heading">
+          <div className="section-heading scroll-reveal" data-scroll-reveal>
             <span>01 / Selected work</span>
             <h2>Things I&apos;ve built<br />and worked on.</h2>
           </div>
 
           <div className="projects-list">
-            {featuredProjects.map((project) => (
-              <article className="project-row" key={project.number}>
-                <div className="project-meta">
-                  <span className="project-number">{project.number}</span>
-                  <span>{project.category}</span>
-                </div>
-
-                <div className="project-copy">
-                  <h3>{project.title}</h3>
-                  <p>{project.description}</p>
-                  <div className="stack-list">
-                    {project.stack.map((item) => <span key={item}>{item}</span>)}
-                  </div>
-                  {project.href && (
-                    <a className="project-link" href={project.href} target="_blank" rel="noreferrer">
-                      {project.linkLabel} <span>↗</span>
-                    </a>
-                  )}
-                </div>
-
-                <div className={`project-visual visual-${project.number}`}>
+            {featuredProjects.map((project, index) => {
+              const visualContent = (
+                <>
                   <span className="visual-top">{project.visualDetail}</span>
                   <strong>{project.visual}</strong>
                   <div className="visual-grid" />
-                  <span className="view-pill">VIEW</span>
+                  <span className="view-pill">{project.href ? 'OPEN' : 'LIVE'}</span>
+                </>
+              );
+
+              return (
+                <article
+                  className="project-row scroll-reveal"
+                  data-scroll-reveal
+                  style={{ transitionDelay: `${index * 55}ms` }}
+                  key={project.number}
+                >
+                  <div className="project-meta">
+                    <span className="project-number">{project.number}</span>
+                    <span>{project.category}</span>
+                  </div>
+
+                  <div className="project-copy">
+                    <h3>{project.title}</h3>
+                    <p>{project.description}</p>
+                    <div className="stack-list">
+                      {project.stack.map((item) => <span key={item}>{item}</span>)}
+                    </div>
+                    {project.href && (
+                      <a className="project-link" href={project.href} target="_blank" rel="noreferrer">
+                        {project.linkLabel} <span>↗</span>
+                      </a>
+                    )}
+                  </div>
+
+                  {project.href ? (
+                    <a
+                      className={`project-visual project-visual-link visual-${project.number}`}
+                      href={project.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Open ${project.title} repository`}
+                    >
+                      {visualContent}
+                    </a>
+                  ) : (
+                    <div className={`project-visual visual-${project.number}`}>{visualContent}</div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="more-work section-wrap" aria-labelledby="more-work-title">
+          <div className="more-work-head scroll-reveal" data-scroll-reveal>
+            <div>
+              <span className="eyebrow">More work</span>
+              <h3 id="more-work-title">More code,<br />less spotlight.</h3>
+            </div>
+            <a href="https://github.com/fanostomp?tab=repositories" target="_blank" rel="noreferrer">
+              All repositories ↗
+            </a>
+          </div>
+
+          <div className="more-work-grid">
+            {moreProjects.map((project, index) => (
+              <a
+                className="more-card scroll-reveal"
+                data-scroll-reveal
+                style={{ transitionDelay: `${index * 70}ms` }}
+                href={project.href}
+                target="_blank"
+                rel="noreferrer"
+                key={project.title}
+              >
+                <div className="more-card-top">
+                  <span className="more-index">0{index + 5}</span>
+                  <span className="more-arrow">↗</span>
                 </div>
-              </article>
+                <span className="more-category">{project.category}</span>
+                <h4>{project.title}</h4>
+                <p>{project.summary}</p>
+                <div className="mini-stack">
+                  {project.stack.map((item) => <span key={item}>{item}</span>)}
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section className="experience section-wrap" id="experience">
+          <div className="section-heading scroll-reveal" data-scroll-reveal>
+            <span>02 / Experience</span>
+            <h2>Production work,<br />not just coursework.</h2>
+          </div>
+
+          <div className="experience-grid">
+            <div className="experience-card scroll-reveal" data-scroll-reveal>
+              <span className="experience-context">{experience.context}</span>
+              <h3>{experience.role}</h3>
+              <p>{experience.summary}</p>
+              <div className="experience-signal">
+                <span>UI</span><i />
+                <span>API</span><i />
+                <span>DATA</span>
+              </div>
+            </div>
+
+            <div className="experience-highlights">
+              {experience.highlights.map((highlight, index) => (
+                <div
+                  className="highlight-row scroll-reveal"
+                  data-scroll-reveal
+                  style={{ transitionDelay: `${index * 60}ms` }}
+                  key={highlight}
+                >
+                  <span>0{index + 1}</span>
+                  <p>{highlight}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="stack-section section-wrap" aria-labelledby="stack-title">
+          <div className="section-heading scroll-reveal" data-scroll-reveal>
+            <span>03 / Stack</span>
+            <h2 id="stack-title">Tools I actually<br />work with.</h2>
+          </div>
+
+          <div className="tech-grid">
+            {techGroups.map((group, index) => (
+              <div
+                className="tech-group scroll-reveal"
+                data-scroll-reveal
+                style={{ transitionDelay: `${index * 55}ms` }}
+                key={group.title}
+              >
+                <span className="tech-number">0{index + 1}</span>
+                <h3>{group.title}</h3>
+                <div className="tech-items">
+                  {group.items.map((item) => <span key={item}>{item}</span>)}
+                </div>
+              </div>
             ))}
           </div>
         </section>
 
         <section className="about section-wrap" id="about">
-          <div className="section-heading compact">
-            <span>02 / About</span>
+          <div className="section-heading compact scroll-reveal" data-scroll-reveal>
+            <span>04 / About</span>
             <h2>Across the stack,<br />not stuck in one layer.</h2>
           </div>
           <div className="about-grid">
-            <p className="about-lead">
+            <p className="about-lead scroll-reveal" data-scroll-reveal>
               I like understanding how the whole product works — interface, API, data and the messy debugging in between.
             </p>
-            <div className="about-copy">
+            <div className="about-copy scroll-reveal" data-scroll-reveal style={{ transitionDelay: '80ms' }}>
               <p>
                 I&apos;m Theofanis Tompolis, a final-year Computer Engineering student at the University of Ioannina.
-                My work spans production web applications, university systems projects, compiler design and data-focused challenges.
+                My work spans production web applications, systems projects, compiler design and data-focused challenges.
               </p>
               <p>
                 I care about clean interfaces, maintainable code and getting features over the line instead of stopping at the demo stage.
@@ -135,9 +286,11 @@ export default function PortfolioHome() {
         </section>
 
         <section className="contact section-wrap" id="contact">
-          <span className="contact-label">03 / Contact</span>
-          <h2>Have something<br /><em>interesting</em> to build?</h2>
-          <a className="contact-email" href="mailto:fanostompolis97@gmail.com">fanostompolis97@gmail.com ↗</a>
+          <div className="scroll-reveal" data-scroll-reveal>
+            <span className="contact-label">05 / Contact</span>
+            <h2>Have something<br /><em>interesting</em> to build?</h2>
+            <a className="contact-email" href="mailto:fanostompolis97@gmail.com">fanostompolis97@gmail.com ↗</a>
+          </div>
           <div className="footer-row">
             <span>© {new Date().getFullYear()} Theofanis Tompolis</span>
             <button onClick={() => setTerminalOpen(true)}>Enter terminal mode &gt;_</button>
@@ -149,7 +302,7 @@ export default function PortfolioHome() {
         <div className="terminal-overlay" role="dialog" aria-modal="true" aria-label="Legacy terminal portfolio">
           <div className="terminal-overlay-bar">
             <span>LEGACY MODE / FANOS TERMINAL 1.0</span>
-            <button onClick={() => setTerminalOpen(false)}>CLOSE ×</button>
+            <button onClick={() => setTerminalOpen(false)} autoFocus>CLOSE ×</button>
           </div>
           <div className="terminal-stage">
             <Terminal />
