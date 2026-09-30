@@ -299,9 +299,9 @@ export default function PortfolioHome() {
       </main>
 
       {terminalOpen && (
-        <div className="terminal-overlay" role="dialog" aria-modal="true" aria-label="Legacy terminal portfolio">
+        <div className="terminal-overlay" role="dialog" aria-modal="true" aria-label="Portfolio terminal mode">
           <div className="terminal-overlay-bar">
-            <span>LEGACY MODE / FANOS TERMINAL 1.0</span>
+            <span>TERMINAL MODE / FANOS PORTFOLIO</span>
             <button onClick={() => setTerminalOpen(false)} autoFocus>CLOSE ×</button>
           </div>
           <div className="terminal-stage">

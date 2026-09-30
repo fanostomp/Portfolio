@@ -1,174 +1,96 @@
-// src/components/Terminal.tsx
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { useTypewriter } from '@/hooks/useTypewriter';
-import ProjectModal from '@/components/ProjectModal';
-import { projects } from '@/data';
-import type { Project } from '@/data';
+import React, { useEffect, useRef, useState } from 'react';
+import { experience, featuredProjects, moreProjects, techGroups } from '@/data/portfolio';
 
-// --- Helper Icon Components for the Header ---
-
-const PowerShellIcon = () => (
-  <svg fill="#fff" height="20px" width="20px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-    <path d="M5,28h22.2c0.4,0,0.8-0.4,0.8-0.8V4.8C28,4.4,27.6,4,27.2,4H5C4.4,4,4,4.4,4,5v22C4,27.6,4.4,28,5,28z M6,6h20v20H6V6z"/>
-    <path d="M8.8,19.2h8.2v1.5H8.8V19.2z M12.5,15.1l-3,2.4l3,2.4V15.1 M11.8,13.6c-0.3,0-0.5,0.1-0.7,0.3l-4.5,3.6  c-0.2,0.2-0.2,0.5,0,0.7l4.5,3.6c0.2,0.2,0.4,0.3,0.7,0.3c0.4,0,0.8-0.4,0.8-0.8v-7C12.5,13.9,12.2,13.6,11.8,13.6L11.8,13.6z"/>
-  </svg>
-);
-
-const WindowControls = () => (
-  <div className="flex items-center space-x-4">
-    <svg className="w-4 h-4 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"></path></svg>
-    <svg className="w-4 h-4 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18h12V6H6v12z"></path></svg>
-    <svg className="w-4 h-4 text-gray-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-  </div>
-);
-
-// --- SVG Icon Components for Skills ---
-
-
-import PythonIcon from '@/assets/icons/python.svg';
-import MySqlIcon from '@/assets/icons/mysql.svg';
-import JavaIcon from '@/assets/icons/java.svg';
-import JsIcon from '@/assets/icons/javascript.svg';
-import ReactIcon from '@/assets/icons/react.svg';
-import HtmlIcon from '@/assets/icons/html.svg';
-import CssIcon from '@/assets/icons/css.svg';
-import CodeIcon from '@/assets/icons/coding.svg';
-import CIcon from '@/assets/icons/c-1.svg';
-import CppIcon from '@/assets/icons/cpp.svg';
-import VhdlIcon from '@/assets/icons/vhdl.svg';
-import HaskellIcon from '@/assets/icons/haskell.svg';
-import PrologIcon from '@/assets/icons/prolog.svg';
-import AssemblyIcon from '@/assets/icons/assembly.svg';
-
-
-// --- Component Definitions for Command Outputs ---
-
-interface HelpProps {
+type HelpProps = {
   onCommandClick: (command: string) => void;
-}
-interface ProjectsProps {
-  onCommandClick: (command: string) => void;
-}
+};
+
+type TerminalProject = {
+  id: number;
+  title: string;
+  category: string;
+  summary: string;
+  stack: string[];
+  href?: string;
+};
+
+const terminalProjects: TerminalProject[] = [
+  ...featuredProjects.map((project, index) => ({
+    id: index + 1,
+    title: project.title,
+    category: project.category,
+    summary: project.description,
+    stack: project.stack,
+    href: project.href,
+  })),
+  ...moreProjects.map((project, index) => ({
+    id: featuredProjects.length + index + 1,
+    title: project.title,
+    category: project.category,
+    summary: project.summary,
+    stack: project.stack,
+    href: project.href,
+  })),
+];
+
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <p className="mb-3 font-mono text-xs uppercase tracking-[0.16em] text-[#c7ff4a]">// {children}</p>
+);
 
 const WelcomeMessage = () => (
-  <div>
-    <pre className="text-white">
-      {`
-        ███████╗ █████╗ ███╗   ██╗ ██████╗ ███████╗
-        ██╔════╝██╔══██╗████╗  ██║██╔═══██╗██╔════╝
-        █████╗  ███████║██╔██╗ ██║██║   ██║███████╗
-        ██╔══╝  ██╔══██║██║╚██╗██║██║   ██║╚════██║
-        ██║     ██║  ██║██║ ╚████║╚██████╔╝███████║
-        ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚══════╝
-                                                  
-      `}
-    </pre>
-    <p>Welcome to my interactive terminal portfolio!
-      My name is Theofanis Tompolis. I am a Computer Engineering student at the University of Ioannina with a passion for coding and building useful software.
-      Always learning, always building. Feel free to explore my projects!</p>
+  <div className="space-y-4">
+    <div>
+      <p className="text-lg font-bold tracking-tight text-[#f3f0e8] sm:text-xl">
+        FANOS<span className="text-[#c7ff4a]">_</span> // PORTFOLIO TERMINAL
+      </p>
+      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-[#9c9b94]">
+        Full-stack developer · alternate interface
+      </p>
+    </div>
+
+    <div className="border-l border-[#c7ff4a]/40 pl-4 text-[#c8c6bf]">
+      <p><span className="text-[#9c9b94]">role:</span> full-stack developer</p>
+      <p><span className="text-[#9c9b94]">focus:</span> React / TypeScript / .NET / SQL</p>
+      <p><span className="text-[#9c9b94]">status:</span> <span className="text-[#c7ff4a]">open to opportunities</span></p>
+    </div>
+
+    <p className="text-[#9c9b94]">
+      Same portfolio, different interface. Type <span className="text-[#c7ff4a]">help</span> or click a command below.
+    </p>
   </div>
 );
 
 const Help = ({ onCommandClick }: HelpProps) => {
-    const commands = [
-      { cmd: 'about', desc: 'Learn more about me' },
-      { cmd: 'skills', desc: 'View my technical skills'},
-      { cmd: 'projects', desc: 'View my projects' },
-      { cmd: 'contact', desc: 'Get my contact information' },
-      { cmd: 'clear', desc: 'Clear the terminal screen' },
-    ];
-    return (
-        <div>
-            <p>Type one of the commands below, or simply click on it:</p>
-            {commands.map(({ cmd, desc }) => (
-                <p key={cmd} className="mt-1">
-                    <button className="text-white underline hover:text-terminal-blue text-left" onClick={() => onCommandClick(cmd)}>{cmd}</button>
-                    <span className="text-gray-400"> - {desc}</span>
-                </p>
-            ))}
-        </div>
-    );
-};
-
-const About = () => {
-  const fullText = "I’m Theofanis Tompolis — a passionate and dedicated Computer Engineering student at the University of Ioannina, with a strong background in both practical technical work and software development. I spent over three years working at H.A. Garage Equipment Services, where I developed a hands-on mindset and problem-solving skills that I now apply to coding. I have solid experience in programming languages such as C, Java, Python, and MySQL. I've also worked with C++, Pascal, Haskell, and Prolog, giving me a broad understanding of different paradigms and problem-solving approaches. On the web development side, I designed and built my personal website using React and JavaScript, showcasing both technical functionality and clean, responsive design. I'm always eager to expand my skill set and embrace new technologies. My projects range from full-stack web applications tailored for real-world needs to custom tools like a Greek++ language parser and intermediate code generator — demonstrating my ability to work across the stack and solve complex problems. I'm actively seeking opportunities where I can contribute to impactful software projects, grow alongside talented teams, and turn ideas into high-quality solutions. I’m driven by curiosity, creativity, and a desire to keep improving as a developer.";
-  const typedText = useTypewriter(fullText, 10);
-  return (
-    <div>
-      <p className="text-2xl font-bold text-white mb-2">About Me</p>
-      <p>{typedText}</p>
-    </div>
-  );
-};
-
-const Projects = ({ onCommandClick }: ProjectsProps) => (
-    <div>
-        <p className="text-2xl font-bold text-white mb-2 fade-in-item">My Projects</p>
-        {projects.map((p, index) => (
-            <p 
-                key={p.id} 
-                className="fade-in-item"
-                style={{ animationDelay: `${(index + 1) * 75}ms` }}
-            >
-                {p.id}. 
-                <button 
-                    className="text-white underline hover:text-terminal-blue text-left ml-2"
-                    onClick={() => onCommandClick(`projects ${p.id}`)}
-                >
-                    {p.title}
-                </button>
-            </p>
-        ))}
-        <p 
-            className="mt-4 fade-in-item"
-            style={{ animationDelay: `${(projects.length + 1) * 75}ms` }}
-        >
-            Click a project title or type 'projects {'<number>'}' to view details.
-        </p>
-    </div>
-);
-
-const Contact = () => (
-    <div>
-        <p className="text-2xl font-bold text-white mb-2">Contact Me</p>
-        <p>Email: <a href="mailto:fanostompolis97@gmail.com" className="underline text-white hover:opacity-75">fanostompolis97@gmail.com</a></p>
-        <p>LinkedIn: <a href="https://www.linkedin.com/in/theofanis-tompolis/" target="_blank" rel="noopener noreferrer" className="underline text-white hover:opacity-75">linkedin.com/in/theofanis-tompolis/</a></p>
-        <p>GitHub: <a href="https://github.com/fanostomp" target="_blank" rel="noopener noreferrer" className="underline text-white hover:opacity-75">github.com/fanostomp</a></p>
-        <p>Instagram: <a href="https://www.instagram.com/fanos_tompolis/" target="_blank" rel="noopener noreferrer" className="underline text-white hover:opacity-75">instagram.com/fanos_tompolis</a></p>
-    </div>
-);
-
-const Skills = () => {
-  const skillsList = [
-    { name: 'C', icon: <CIcon /> },
-    { name: 'C++', icon: <CppIcon /> },
-    { name: 'Python', icon: <PythonIcon /> },
-    { name: 'MySQL', icon: <MySqlIcon /> },
-    { name: 'Java', icon: <JavaIcon /> },
-    { name: 'JavaScript', icon: <JsIcon /> },
-    { name: 'React', icon: <ReactIcon /> },
-    { name: 'HTML', icon: <HtmlIcon /> },
-    { name: 'CSS', icon: <CssIcon /> },
-    { name: 'VHDL', icon: <VhdlIcon /> },
-    { name: 'Prolog', icon: <PrologIcon /> },
-    { name: 'Pascal', icon: <CodeIcon /> },
-    { name: 'Haskell', icon: <HaskellIcon /> },
-    { name: 'Assembly', icon: <AssemblyIcon /> },
+  const commands = [
+    ['about', 'Who I am and how I work'],
+    ['experience', 'Production full-stack experience'],
+    ['stack', 'Tools I actually work with'],
+    ['projects', 'Featured and supporting projects'],
+    ['project <n>', 'Open details for one project'],
+    ['contact', 'Email, GitHub and LinkedIn'],
+    ['status', 'Current availability'],
+    ['clear', 'Clear the terminal'],
   ];
+
   return (
     <div>
-      <p className="text-2xl font-bold text-white mb-4 fade-in-item">My Skills</p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {skillsList.map((skill, index) => (
-          <div 
-            key={skill.name} 
-            className="flex items-center space-x-3 bg-gray-800/50 p-3 rounded-md fade-in-item"
-            style={{ animationDelay: `${(index + 1) * 50}ms` }}
-          >
-            <div className="w-6 h-6 flex-shrink-0">{skill.icon}</div>
-            <span className="text-white font-medium">{skill.name}</span>
+      <SectionTitle>commands</SectionTitle>
+      <div className="space-y-1.5">
+        {commands.map(([cmd, desc]) => (
+          <div className="grid grid-cols-[minmax(120px,180px)_1fr] gap-4" key={cmd}>
+            {cmd.includes('<n>') ? (
+              <span className="text-[#c7ff4a]">{cmd}</span>
+            ) : (
+              <button
+                className="w-fit text-left text-[#c7ff4a] underline decoration-[#c7ff4a]/35 underline-offset-4 hover:decoration-[#c7ff4a]"
+                onClick={() => onCommandClick(cmd)}
+              >
+                {cmd}
+              </button>
+            )}
+            <span className="text-[#8f8e88]">{desc}</span>
           </div>
         ))}
       </div>
@@ -176,67 +98,208 @@ const Skills = () => {
   );
 };
 
+const About = () => (
+  <div>
+    <SectionTitle>about</SectionTitle>
+    <div className="max-w-3xl space-y-3 leading-7 text-[#c8c6bf]">
+      <p>
+        I&apos;m Theofanis Tompolis, a final-year Computer Engineering student at the University of Ioannina and a full-stack developer.
+      </p>
+      <p>
+        I like understanding how the whole product works — interface, API, data and the messy debugging in between. My work spans production web applications, systems projects, compiler design and data-focused challenges.
+      </p>
+      <p>
+        I care about clean interfaces, maintainable code and getting features over the line instead of stopping at the demo stage.
+      </p>
+    </div>
+  </div>
+);
 
-// --- The Main Terminal Component ---
+const Experience = () => (
+  <div>
+    <SectionTitle>experience</SectionTitle>
+    <p className="text-xl font-bold uppercase tracking-tight text-[#f3f0e8]">{experience.role}</p>
+    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[#9c9b94]">{experience.context}</p>
+    <p className="mt-4 max-w-3xl leading-7 text-[#c8c6bf]">{experience.summary}</p>
+    <div className="mt-5 space-y-2">
+      {experience.highlights.map((highlight, index) => (
+        <p className="flex gap-3 text-[#b4b2ab]" key={highlight}>
+          <span className="text-[#c7ff4a]">0{index + 1}</span>
+          <span>{highlight}</span>
+        </p>
+      ))}
+    </div>
+  </div>
+);
 
-const initialPrompt = `PS C:\\Profile:`;
+const Stack = () => (
+  <div>
+    <SectionTitle>stack</SectionTitle>
+    <div className="grid gap-5 sm:grid-cols-2">
+      {techGroups.map((group, index) => (
+        <div className="border-l border-[#f3f0e8]/15 pl-4" key={group.title}>
+          <p className="text-xs text-[#c7ff4a]">0{index + 1}</p>
+          <p className="mt-1 font-bold uppercase text-[#f3f0e8]">{group.title}</p>
+          <p className="mt-2 leading-6 text-[#9c9b94]">{group.items.join(' · ')}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const Projects = ({ onCommandClick }: HelpProps) => (
+  <div>
+    <SectionTitle>projects</SectionTitle>
+    <div className="space-y-2">
+      {terminalProjects.map((project) => (
+        <div className="grid grid-cols-[42px_minmax(0,1fr)] gap-2" key={project.id}>
+          <span className="text-[#6f706b]">0{project.id}</span>
+          <div>
+            <button
+              className="text-left font-medium text-[#f3f0e8] hover:text-[#c7ff4a]"
+              onClick={() => onCommandClick(`project ${project.id}`)}
+            >
+              {project.title}
+            </button>
+            <span className="ml-3 text-xs uppercase tracking-[0.08em] text-[#73746f]">{project.category}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+    <p className="mt-5 text-[#8f8e88]">
+      Type <span className="text-[#c7ff4a]">project 1</span> through <span className="text-[#c7ff4a]">project {terminalProjects.length}</span> for details.
+    </p>
+  </div>
+);
+
+const ProjectDetails = ({ project }: { project: TerminalProject }) => (
+  <div>
+    <SectionTitle>project 0{project.id}</SectionTitle>
+    <p className="text-xl font-bold uppercase tracking-tight text-[#f3f0e8]">{project.title}</p>
+    <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[#9c9b94]">{project.category}</p>
+    <p className="mt-4 max-w-3xl leading-7 text-[#c8c6bf]">{project.summary}</p>
+    <p className="mt-4 text-[#8f8e88]">
+      <span className="text-[#c7ff4a]">stack:</span> {project.stack.join(' · ')}
+    </p>
+    {project.href ? (
+      <p className="mt-4">
+        <a className="text-[#c7ff4a] underline underline-offset-4" href={project.href} target="_blank" rel="noreferrer">
+          open repository ↗
+        </a>
+      </p>
+    ) : (
+      <p className="mt-4 text-[#8f8e88]">
+        <span className="text-[#c7ff4a]">source:</span> private production work
+      </p>
+    )}
+  </div>
+);
+
+const Contact = () => (
+  <div>
+    <SectionTitle>contact</SectionTitle>
+    <div className="space-y-2 text-[#c8c6bf]">
+      <p>
+        <span className="inline-block w-24 text-[#8f8e88]">email</span>
+        <a className="text-[#c7ff4a] underline underline-offset-4" href="mailto:fanostompolis97@gmail.com">fanostompolis97@gmail.com</a>
+      </p>
+      <p>
+        <span className="inline-block w-24 text-[#8f8e88]">github</span>
+        <a className="text-[#f3f0e8] hover:text-[#c7ff4a]" href="https://github.com/fanostomp" target="_blank" rel="noreferrer">github.com/fanostomp ↗</a>
+      </p>
+      <p>
+        <span className="inline-block w-24 text-[#8f8e88]">linkedin</span>
+        <a className="text-[#f3f0e8] hover:text-[#c7ff4a]" href="https://www.linkedin.com/in/theofanis-tompolis/" target="_blank" rel="noreferrer">linkedin.com/in/theofanis-tompolis ↗</a>
+      </p>
+    </div>
+  </div>
+);
+
+const Status = () => (
+  <div>
+    <SectionTitle>status</SectionTitle>
+    <div className="border-l border-[#c7ff4a]/40 pl-4">
+      <p><span className="text-[#8f8e88]">availability:</span> <span className="text-[#c7ff4a]">open to opportunities</span></p>
+      <p><span className="text-[#8f8e88]">focus:</span> full-stack development</p>
+      <p><span className="text-[#8f8e88]">current stack:</span> React · TypeScript · .NET · SQL</p>
+    </div>
+  </div>
+);
+
+const initialPrompt = 'fanos@portfolio:~$';
 
 export default function Terminal() {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<{ command: string; output: React.ReactNode }[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const runCommand = (commandStr: string) => {
     const command = commandStr.trim().toLowerCase();
-    let output: React.ReactNode;
-    const commandHistoryEntry = { command: `${initialPrompt}> ${commandStr}`, output: null };
-    
-    setHistory(prev => [...prev, commandHistoryEntry]);
-    
-    if (command.startsWith('projects ')) {
-      const parts = command.split(' ');
-      if (parts.length > 1 && !isNaN(parseInt(parts[1], 10))) {
-          const id = parseInt(parts[1], 10);
-          const project = projects.find(p => p.id === id);
-          if (project) {
-            setSelectedProject(project);
-            setIsModalOpen(true);
-            return;
-          } else {
-            output = <p className="text-red-500">Project with ID '{parts[1]}' not found.</p>;
-          }
-      } else {
-          output = <p className="text-red-500">Please specify a project number. e.g., 'projects 1'</p>;
-      }
-    } else {
-      switch (command) {
-        case 'clear':
-          setHistory([{ command: '', output: <WelcomeMessage /> }, { command: '', output: <Help onCommandClick={runCommand} /> }]);
-          return;
-        case 'help':
-          output = <Help onCommandClick={runCommand} />;
-          break;
-        case 'about':
-          output = <About />;
-          break;
-        case 'skills':
-          output = <Skills />;
-          break;
-        case 'projects':
-          output = <Projects onCommandClick={runCommand} />;
-          break;
-        case 'contact':
-          output = <Contact />;
-          break;
-        default:
-          output = <p className="text-red-500">The term '{command}' is not recognized...</p>;
-          break;
-      }
+    if (!command) return;
+
+    setHistory((previous) => [
+      ...previous,
+      { command: `${initialPrompt} ${commandStr}`, output: null },
+    ]);
+
+    const projectMatch = command.match(/^(?:project|projects)\s+0?(\d+)$/);
+    if (projectMatch) {
+      const id = Number(projectMatch[1]);
+      const project = terminalProjects.find((item) => item.id === id);
+      const output = project ? (
+        <ProjectDetails project={project} />
+      ) : (
+        <p className="text-red-400">Project {id} was not found. Type projects to see the available IDs.</p>
+      );
+      setHistory((previous) => [...previous, { command: '', output }]);
+      return;
     }
-    setHistory(prev => [...prev, { command: '', output }]);
+
+    let output: React.ReactNode;
+
+    switch (command) {
+      case 'clear':
+        setHistory([
+          { command: '', output: <WelcomeMessage /> },
+          { command: '', output: <Help onCommandClick={runCommand} /> },
+        ]);
+        return;
+      case 'help':
+        output = <Help onCommandClick={runCommand} />;
+        break;
+      case 'whoami':
+      case 'about':
+        output = <About />;
+        break;
+      case 'work':
+      case 'experience':
+        output = <Experience />;
+        break;
+      case 'skills':
+      case 'stack':
+        output = <Stack />;
+        break;
+      case 'projects':
+        output = <Projects onCommandClick={runCommand} />;
+        break;
+      case 'links':
+      case 'contact':
+        output = <Contact />;
+        break;
+      case 'status':
+        output = <Status />;
+        break;
+      default:
+        output = (
+          <p className="text-red-400">
+            Command not found: {command}. Type <span className="text-[#c7ff4a]">help</span> to see available commands.
+          </p>
+        );
+        break;
+    }
+
+    setHistory((previous) => [...previous, { command: '', output }]);
   };
 
   useEffect(() => {
@@ -244,68 +307,65 @@ export default function Terminal() {
       { command: '', output: <WelcomeMessage /> },
       { command: '', output: <Help onCommandClick={runCommand} /> },
     ]);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (terminalRef.current) {
-        terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [history]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInput(e.target.value);
-  };
-
-  const handleCommand = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      runCommand(input);
-      setInput('');
-    }
-  };
-
   return (
-    <>
-      <ProjectModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        project={selectedProject}
-      />
-      <div
-        className="w-full max-w-4xl bg-[#010101] rounded-md shadow-2xl border border-gray-700 flex flex-col overflow-hidden h-[85vh] md:h-[600px]"
-        onClick={() => inputRef.current?.focus()}
-      >
-        <div className="bg-[#0d0d0d] px-4 py-1.5 flex justify-between items-center flex-shrink-0 border-b border-gray-800">
-          <div className="flex items-center space-x-2">
-              <PowerShellIcon />
-              <span className="text-sm text-white">Fanos Terminal 1.0</span>
-          </div>
-          <WindowControls />
+    <div
+      className="flex h-[82vh] w-full max-w-5xl flex-col overflow-hidden border border-[#f3f0e8]/15 bg-[#0d0e0e] shadow-2xl md:h-[650px]"
+      onClick={() => inputRef.current?.focus()}
+    >
+      <div className="flex flex-shrink-0 items-center justify-between border-b border-[#f3f0e8]/10 bg-[#141515] px-4 py-3 font-mono text-[10px] uppercase tracking-[0.12em]">
+        <div className="flex items-center gap-3">
+          <span className="h-2 w-2 rounded-full bg-[#c7ff4a] shadow-[0_0_12px_#c7ff4a]" />
+          <span className="text-[#f3f0e8]">FANOS // TERMINAL MODE</span>
         </div>
-        <div 
-          className="flex-grow p-4 overflow-y-auto text-sm text-white"
-          ref={terminalRef}
-        >
-          {history.map((entry, index) => (
-            <div key={index}>
-              {entry.command && <div className="flex items-center"><span className="text-white">{entry.command}</span></div>}
-              {entry.output && <div className="mt-2 mb-4">{entry.output}</div>}
-            </div>
-          ))}
-          <div className="flex items-center">
-            <span className="text-white">{initialPrompt}</span>
-            <input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleCommand}
-              className="bg-transparent border-none outline-none flex-1 ml-1 text-white caret-white"
-              autoFocus
-            />
+        <span className="text-[#73746f]">portfolio_v2 · online</span>
+      </div>
+
+      <div
+        className="flex-grow overflow-y-auto p-4 font-mono text-sm text-[#c8c6bf] sm:p-6"
+        ref={terminalRef}
+      >
+        {history.map((entry, index) => (
+          <div key={index}>
+            {entry.command && (
+              <div className="mt-3 flex items-start gap-2">
+                <span className="whitespace-nowrap text-[#c7ff4a]">{initialPrompt}</span>
+                <span className="text-[#f3f0e8]">{entry.command.replace(`${initialPrompt} `, '')}</span>
+              </div>
+            )}
+            {entry.output && <div className="mb-6 mt-3 fade-in-item">{entry.output}</div>}
           </div>
+        ))}
+
+        <div className="flex items-center gap-2 border-t border-[#f3f0e8]/8 pt-4">
+          <span className="whitespace-nowrap text-[#c7ff4a]">{initialPrompt}</span>
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') {
+                runCommand(input);
+                setInput('');
+              }
+            }}
+            className="min-w-0 flex-1 border-none bg-transparent text-[#f3f0e8] outline-none caret-[#c7ff4a]"
+            aria-label="Terminal command"
+            autoFocus
+            autoComplete="off"
+            spellCheck={false}
+          />
         </div>
       </div>
-    </>
+    </div>
   );
 }
