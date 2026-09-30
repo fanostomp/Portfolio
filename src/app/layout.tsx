@@ -1,16 +1,16 @@
-// src/app/layout.tsx
 import type { Metadata } from 'next';
 import './globals.css';
+import './section-overrides.css';
 
 export const metadata: Metadata = {
-  title: 'Theofanis | Portfolio',
-  description: 'My interactive terminal portfolio.',
+  title: 'Theofanis Tompolis — Full-Stack Developer',
+  description: 'Portfolio of Theofanis Tompolis, a full-stack developer working with React, TypeScript, .NET and SQL.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-terminal-bg text-white font-mono">{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

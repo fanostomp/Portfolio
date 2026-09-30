@@ -1,0 +1,80 @@
+/* Final visual polish: hide numbered section labels, keep the original editorial stack alignment, and make the tech ticker feel alive. */
+.section-heading > span,
+.contact-label {
+  display: none;
+}
+
+/* Keep the editorial offset for the main section titles after removing the labels. */
+.section-heading h2 {
+  grid-column: 2;
+}
+
+/* Restore the original left-aligned stack / skills layout. */
+.stack-section .section-heading {
+  display: grid;
+  text-align: left;
+}
+
+.stack-section .section-heading h2 {
+  grid-column: 2;
+  max-width: none;
+}
+
+.stack-section .tech-grid {
+  width: 100%;
+  margin-inline: 0;
+}
+
+.stack-section .tech-group {
+  display: block;
+  text-align: left;
+}
+
+.stack-section .tech-number {
+  align-self: auto;
+}
+
+.stack-section .tech-items {
+  width: auto;
+  align-items: stretch;
+}
+
+.stack-section .tech-items span {
+  width: auto;
+  text-align: left;
+}
+
+/* Faster, seamless right-to-left marquee. */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marqueeTicker 13s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track span {
+  flex: 0 0 auto;
+  padding-right: 2rem;
+}
+
+@keyframes marqueeTicker {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+.contact h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 900px) {
+  .section-heading h2,
+  .stack-section .section-heading h2 {
+    grid-column: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
