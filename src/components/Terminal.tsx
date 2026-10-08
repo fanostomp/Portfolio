@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { experience, featuredProjects, moreProjects, techGroups } from '@/data/portfolio';
+import Link from 'next/link';
+import { experience, featuredProjects, moreProjects, profile, techGroups } from '@/data/portfolio';
 
 type HelpProps = {
   onCommandClick: (command: string) => void;
@@ -14,6 +15,7 @@ type TerminalProject = {
   summary: string;
   stack: string[];
   href?: string;
+  slug?: string;
 };
 
 const terminalProjects: TerminalProject[] = [
@@ -24,6 +26,7 @@ const terminalProjects: TerminalProject[] = [
     summary: project.description,
     stack: project.stack,
     href: project.href,
+    slug: project.slug,
   })),
   ...moreProjects.map((project, index) => ({
     id: featuredProjects.length + index + 1,
@@ -53,7 +56,7 @@ const WelcomeMessage = () => (
     <div className="border-l border-[#c7ff4a]/40 pl-4 text-[#c8c6bf]">
       <p><span className="text-[#9c9b94]">role:</span> full-stack developer</p>
       <p><span className="text-[#9c9b94]">focus:</span> React / TypeScript / .NET / SQL</p>
-      <p><span className="text-[#9c9b94]">status:</span> <span className="text-[#c7ff4a]">open to opportunities</span></p>
+      <p><span className="text-[#9c9b94]">status:</span> <span className="text-[#c7ff4a]">available full-time</span></p>
     </div>
 
     <p className="text-[#9c9b94]">
@@ -71,6 +74,7 @@ const Help = ({ onCommandClick }: HelpProps) => {
     ['project <n>', 'Open details for one project'],
     ['contact', 'Email, GitHub and LinkedIn'],
     ['status', 'Current availability'],
+    ['cv', 'Download my current CV'],
     ['clear', 'Clear the terminal'],
   ];
 
@@ -103,7 +107,7 @@ const About = () => (
     <SectionTitle>about</SectionTitle>
     <div className="max-w-3xl space-y-3 leading-7 text-[#c8c6bf]">
       <p>
-        I&apos;m Theofanis Tompolis, a final-year Computer Engineering student at the University of Ioannina and a full-stack developer.
+        I&apos;m Theofanis Tompolis, a final-year Computer Science &amp; Engineering student at the University of Ioannina and a full-stack developer. I&apos;m completing an integrated master&apos;s degree with expected graduation in 2027, based in Nicosia, Cyprus and available full-time.
       </p>
       <p>
         I like understanding how the whole product works — interface, API, data and the messy debugging in between. My work spans production web applications, systems projects, compiler design and data-focused challenges.
@@ -119,6 +123,7 @@ const Experience = () => (
   <div>
     <SectionTitle>experience</SectionTitle>
     <p className="text-xl font-bold uppercase tracking-tight text-[#f3f0e8]">{experience.role}</p>
+    <p className="mt-2 text-[#c7ff4a]">{experience.company} · {experience.dates}</p>
     <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[#9c9b94]">{experience.context}</p>
     <p className="mt-4 max-w-3xl leading-7 text-[#c8c6bf]">{experience.summary}</p>
     <div className="mt-5 space-y-2">
@@ -181,6 +186,7 @@ const ProjectDetails = ({ project }: { project: TerminalProject }) => (
     <p className="mt-4 text-[#8f8e88]">
       <span className="text-[#c7ff4a]">stack:</span> {project.stack.join(' · ')}
     </p>
+    {project.slug ? <p className="mt-4"><Link className="text-[#c7ff4a] underline underline-offset-4" href={`/work/${project.slug}`}>read case study ↗</Link></p> : null}
     {project.href ? (
       <p className="mt-4">
         <a className="text-[#c7ff4a] underline underline-offset-4" href={project.href} target="_blank" rel="noreferrer">
@@ -189,7 +195,7 @@ const ProjectDetails = ({ project }: { project: TerminalProject }) => (
       </p>
     ) : (
       <p className="mt-4 text-[#8f8e88]">
-        <span className="text-[#c7ff4a]">source:</span> private production work
+        <span className="text-[#c7ff4a]">status:</span> platform closed · production source private
       </p>
     )}
   </div>
@@ -219,7 +225,8 @@ const Status = () => (
   <div>
     <SectionTitle>status</SectionTitle>
     <div className="border-l border-[#c7ff4a]/40 pl-4">
-      <p><span className="text-[#8f8e88]">availability:</span> <span className="text-[#c7ff4a]">open to opportunities</span></p>
+      <p><span className="text-[#8f8e88]">availability:</span> <span className="text-[#c7ff4a]">{profile.availability}</span></p>
+      <p><span className="text-[#8f8e88]">location:</span> {profile.location}</p>
       <p><span className="text-[#8f8e88]">focus:</span> full-stack development</p>
       <p><span className="text-[#8f8e88]">current stack:</span> React · TypeScript · .NET · SQL</p>
     </div>
@@ -286,6 +293,9 @@ export default function Terminal() {
       case 'links':
       case 'contact':
         output = <Contact />;
+        break;
+      case 'cv':
+        output = <p><a className="text-[#c7ff4a] underline underline-offset-4" href={profile.cv} download>Download Theofanis Tompolis CV ↓</a></p>;
         break;
       case 'status':
         output = <Status />;
@@ -369,3 +379,4 @@ export default function Terminal() {
     </div>
   );
 }
+
