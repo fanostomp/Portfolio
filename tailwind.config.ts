@@ -1,5 +1,6 @@
 // tailwind.config.ts
 import type { Config } from 'tailwindcss';
+import typography from '@tailwindcss/typography';
 
 const config: Config = {
   // This tells Tailwind to scan all the files inside your 'src' folder.
@@ -17,6 +18,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('@tailwindcss/typography'),],
+  plugins: [typography],
 };
 export default config;

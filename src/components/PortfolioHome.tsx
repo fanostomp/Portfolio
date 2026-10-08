@@ -1,29 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Terminal from '@/components/Terminal';
-import { experience, featuredProjects, moreProjects, techGroups } from '@/data/portfolio';
+import { useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import ProjectVisual from '@/components/ProjectVisual';
+import { experience, featuredProjects, moreProjects, profile, techGroups } from '@/data/portfolio';
+
+const Terminal = dynamic(() => import('@/components/Terminal'), { loading: () => <p className="terminal-loading">Opening terminal…</p> });
 
 const externalLinks = [
-  ['GitHub', 'https://github.com/fanostomp'],
-  ['LinkedIn', 'https://www.linkedin.com/in/theofanis-tompolis/'],
+  ['GitHub', profile.github],
+  ['LinkedIn', profile.linkedin],
 ];
 
 export default function PortfolioHome() {
   const [terminalOpen, setTerminalOpen] = useState(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    document.body.style.overflow = terminalOpen ? 'hidden' : '';
+    if (!terminalOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setTerminalOpen(false);
+      if (event.key === 'Tab') {
+        const controls = Array.from(overlayRef.current?.querySelectorAll<HTMLElement>('a[href], button, input') ?? []).filter((element) => element.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
     };
 
-    if (terminalOpen) window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener('keydown', handleKeyDown);
+      openerRef.current?.focus();
     };
   }, [terminalOpen]);
 
@@ -53,26 +69,27 @@ export default function PortfolioHome() {
 
   return (
     <div className="portfolio-shell">
-      <header className="site-nav">
+      <header className="site-nav" inert={terminalOpen}>
         <a className="brand" href="#top" aria-label="Back to top">
           FANOS<span>_</span>
         </a>
         <nav aria-label="Primary navigation">
           <a href="#work">Work</a>
-          <a href="#experience">Experience</a>
-          <a href="#about">About</a>
+          <a className="nav-secondary" href="#experience">Experience</a>
+          <a className="nav-secondary" href="#about">About</a>
           <a href="#contact">Contact</a>
-          <button className="terminal-trigger" onClick={() => setTerminalOpen(true)} aria-label="Open terminal mode">
+          <a className="nav-cv" href={profile.cv} download>CV ↓</a>
+          <button className="terminal-trigger" onClick={(event) => { openerRef.current = event.currentTarget; setTerminalOpen(true); }} aria-label="Open terminal mode">
             &gt;_
           </button>
         </nav>
       </header>
 
-      <main>
+      <main id="main-content" inert={terminalOpen}>
         <section className="hero section-wrap" id="top">
           <div className="hero-kicker reveal reveal-1">
             <span>Full-stack developer</span>
-            <span className="availability"><i /> Open to opportunities</span>
+            <span className="availability"><i /> {profile.availability}</span>
           </div>
 
           <h1 className="hero-title" aria-label="I build software people actually use">
@@ -88,11 +105,14 @@ export default function PortfolioHome() {
             </p>
             <div className="hero-actions">
               <a className="primary-link" href="#work">Explore selected work <span>↘</span></a>
+              <a className="cv-link" href={profile.cv} download>Download CV ↓</a>
               {externalLinks.map(([label, href]) => (
                 <a key={label} href={href} target="_blank" rel="noreferrer">{label} ↗</a>
               ))}
             </div>
           </div>
+
+          <div className="hero-profile reveal reveal-4"><span>{profile.name}</span><span>{profile.location}</span><span>Integrated Master&apos;s · Expected 2027</span></div>
 
           <div className="hero-orbit" aria-hidden="true">
             <span className="orbit-ring" />
@@ -116,15 +136,6 @@ export default function PortfolioHome() {
 
           <div className="projects-list">
             {featuredProjects.map((project, index) => {
-              const visualContent = (
-                <>
-                  <span className="visual-top">{project.visualDetail}</span>
-                  <strong>{project.visual}</strong>
-                  <div className="visual-grid" />
-                  <span className="view-pill">{project.href ? 'OPEN' : 'LIVE'}</span>
-                </>
-              );
-
               return (
                 <article
                   className="project-row scroll-reveal"
@@ -135,6 +146,7 @@ export default function PortfolioHome() {
                   <div className="project-meta">
                     <span className="project-number">{project.number}</span>
                     <span>{project.category}</span>
+                    <span className="project-status">{project.status}</span>
                   </div>
 
                   <div className="project-copy">
@@ -143,26 +155,13 @@ export default function PortfolioHome() {
                     <div className="stack-list">
                       {project.stack.map((item) => <span key={item}>{item}</span>)}
                     </div>
-                    {project.href && (
-                      <a className="project-link" href={project.href} target="_blank" rel="noreferrer">
-                        {project.linkLabel} <span>↗</span>
-                      </a>
-                    )}
+                    <div className="project-actions">
+                      <Link className="project-link" href={`/work/${project.slug}`}>Read case study <span>↗</span></Link>
+                      {project.href ? <a className="repository-link" href={project.href} target="_blank" rel="noreferrer">Source code ↗</a> : null}
+                    </div>
                   </div>
 
-                  {project.href ? (
-                    <a
-                      className={`project-visual project-visual-link visual-${project.number}`}
-                      href={project.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`Open ${project.title} repository`}
-                    >
-                      {visualContent}
-                    </a>
-                  ) : (
-                    <div className={`project-visual visual-${project.number}`}>{visualContent}</div>
-                  )}
+                  <Link className="project-evidence-link" href={`/work/${project.slug}`} aria-label={`Read ${project.title} case study`}><ProjectVisual project={project} /></Link>
                 </article>
               );
             })}
@@ -192,7 +191,7 @@ export default function PortfolioHome() {
                 key={project.title}
               >
                 <div className="more-card-top">
-                  <span className="more-index">0{index + 5}</span>
+                  <span className="more-index">0{index + featuredProjects.length + 1}</span>
                   <span className="more-arrow">↗</span>
                 </div>
                 <span className="more-category">{project.category}</span>
@@ -216,7 +215,9 @@ export default function PortfolioHome() {
             <div className="experience-card scroll-reveal" data-scroll-reveal>
               <span className="experience-context">{experience.context}</span>
               <h3>{experience.role}</h3>
+              <div className="experience-employer"><strong>{experience.company}</strong><span>{experience.dates}</span></div>
               <p>{experience.summary}</p>
+              <Link className="experience-case-link" href="/work/footy-greece">Read the work story ↗</Link>
               <div className="experience-signal">
                 <span>UI</span><i />
                 <span>API</span><i />
@@ -275,7 +276,7 @@ export default function PortfolioHome() {
             </p>
             <div className="about-copy scroll-reveal" data-scroll-reveal style={{ transitionDelay: '80ms' }}>
               <p>
-                I&apos;m Theofanis Tompolis, a final-year Computer Engineering student at the University of Ioannina.
+                I&apos;m Theofanis Tompolis, a final-year Computer Science &amp; Engineering student at the University of Ioannina, completing an integrated master&apos;s degree with expected graduation in 2027.
                 My work spans production web applications, systems projects, compiler design and data-focused challenges.
               </p>
               <p>
@@ -289,17 +290,18 @@ export default function PortfolioHome() {
           <div className="scroll-reveal" data-scroll-reveal>
             <span className="contact-label">05 / Contact</span>
             <h2>Have something<br /><em>interesting</em> to build?</h2>
-            <a className="contact-email" href="mailto:fanostompolis97@gmail.com">fanostompolis97@gmail.com ↗</a>
+            <a className="contact-email" href={`mailto:${profile.email}`}>{profile.email} ↗</a>
+            <div className="contact-actions"><a href={profile.cv} download>Download CV ↓</a><a href={profile.github} target="_blank" rel="noreferrer">GitHub ↗</a><a href={profile.linkedin} target="_blank" rel="noreferrer">LinkedIn ↗</a><span>{profile.location} · {profile.availability}</span></div>
           </div>
           <div className="footer-row">
             <span>© {new Date().getFullYear()} Theofanis Tompolis</span>
-            <button onClick={() => setTerminalOpen(true)}>Enter terminal mode &gt;_</button>
+            <button onClick={(event) => { openerRef.current = event.currentTarget; setTerminalOpen(true); }}>Enter terminal mode &gt;_</button>
           </div>
         </section>
       </main>
 
       {terminalOpen && (
-        <div className="terminal-overlay" role="dialog" aria-modal="true" aria-label="Portfolio terminal mode">
+        <div ref={overlayRef} className="terminal-overlay" role="dialog" aria-modal="true" aria-label="Portfolio terminal mode">
           <div className="terminal-overlay-bar">
             <span>TERMINAL MODE / FANOS PORTFOLIO</span>
             <button onClick={() => setTerminalOpen(false)} autoFocus>CLOSE ×</button>
@@ -312,3 +314,4 @@ export default function PortfolioHome() {
     </div>
   );
 }
+
